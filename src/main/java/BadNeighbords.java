@@ -43,8 +43,24 @@ and return the maximum amount of donations that can be collected.
  */
 public class BadNeighbords {
 
+
     public static int maxDonations(int[] donations){
-        return 0;
+
+        int[] maxDonations = new int[donations.length];
+        maxDonations[0] = donations[0];
+        maxDonations[1] = donations[1]>donations[0]?donations[1]:donations[0];
+
+        for(int i=2;i<donations.length;i++){
+            maxDonations[i] =
+                    donations[i]+maxDonations[i-2]>maxDonations[i-1]?donations[i]+maxDonations[i-2]:maxDonations[i-1];
+            if(i==(donations.length-1)){
+                maxDonations[i] =
+                        donations[i]+maxDonations[i-2]-maxDonations[0]>maxDonations[i-1]?donations[i]+maxDonations[i-2]-maxDonations[0]:maxDonations[i-1];
+            }
+        }
+
+        System.out.println("Result: " + maxDonations[donations.length-1]);
+        return maxDonations[donations.length-1];
     }
 
 
