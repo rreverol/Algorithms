@@ -41,7 +41,7 @@ and return the maximum amount of donations that can be collected.
  52, 72, 37, 51, 1, 81, 45, 435, 7, 36, 57, 86, 81, 72 }
  Returns: 2926
  */
-public class BadNeighbords {
+public class BadNeighbors {
 
 
     public static int maxDonations(int[] donations){
