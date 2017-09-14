@@ -16,11 +16,7 @@ public class AvoidRoads {
 
         long[][] paths = new long[width+1][height+1];
         int[][] openPaths = new int[width+1][height+1];
-        /*for(int i=0;i<paths.length;i++){
-            for(int j=0;j<paths[i].length;j++){
-                paths[i][j] = -1;
-            }
-        }*/
+
         for(int i=0;i<openPaths.length;i++){
             for(int j=0;j<openPaths[i].length;j++){
                 openPaths[i][j] = BOTH_OPEN;
