@@ -40,7 +40,7 @@ public class ChessMetricTest {
 
     @Test
     public void test5(){
-        int[] start = {0,9};
+        int[] start = {0,0};
         int[] end = {0,99};
         long result = ChessMetric.howMany(100,start,end,50);
         Assert.assertEquals("Test 5 Failed",243097320072600L,result);

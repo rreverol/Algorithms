@@ -59,18 +59,20 @@ public class ChessMetric {
         }
 
         for(int k=1;k<numMoves;k++){
+            int n=0;
             for(int i=0;i<size;i++){
                 for(int j=0;j<size;j++){
-                   int n=0;
-                   for(int l=0;l<movesCoordinates[k].length;l++){
+                   for(int l=0;l<movesCoordinates[k-1].length;l++){
                        if(movesCoordinates[k-1][l][0]==-1)
                            break;
                        int[] localStart = {i,j};
-                       if(testMove(localStart,movesCoordinates[k][l])){
+                       if(testMove(localStart,movesCoordinates[k-1][l])){
                            movesValues[k][i][j] += movesValues[k-1][movesCoordinates[k-1][l][0]][movesCoordinates[k-1][l][1]];
-                           movesCoordinates[k][n][0] = i;
-                           movesCoordinates[k][n][1] = j;
-                           n++;
+                           if(!containsCoordinates(movesCoordinates[k],localStart)){
+                               movesCoordinates[k][n][0] = i;
+                               movesCoordinates[k][n][1] = j;
+                               n++;
+                           }
                        }
                    }
                 }
@@ -82,9 +84,22 @@ public class ChessMetric {
     }
 
     private static boolean testMove(int[] start, int[] end){
-        return ((Math.abs((start[0]+start[1])-(end[0]+end[1]))==1)) |
-                ((Math.abs(end[0]-start[0])*Math.abs(end[1]+start[1]))==1) |
-        ((Math.abs(end[0]-start[0])*Math.abs(end[1]+start[1]))==2);
+        boolean result =  (start[0]==end[0] && Math.abs(start[1]-end[1])==1) |
+                (start[1]==end[1] && Math.abs(start[0]-end[0])==1) |
+                ((Math.abs(end[0]-start[0])*Math.abs(end[1]-start[1]))==1) |
+        ((Math.abs(end[0]-start[0])*Math.abs(end[1]-start[1]))==2);
+        return result;
+    }
+
+    private static boolean containsCoordinates( int[][] coordinates, int[] coordinate){
+        boolean result = false;
+        for(int i=0;i<coordinates.length;i++){
+            if(coordinates[i][0]==coordinate[0] && coordinates[i][1]==coordinate[1]){
+                result=true;
+                break;
+            }
+        }
+        return  result;
     }
 
 
