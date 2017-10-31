@@ -33,10 +33,25 @@
  */
 public class ChessMetric {
 
+    private static final int[] KINGKNIGHT_REFERENCE = {2,2};
+    private static final int[][] KINGKNIGHT_MOVEMENTS = {{0,1},{0,3},{1,0},{1,1},{1,2},{1,3},{1,4},
+            {2,1},{2,3},{3,0},{3,1},{3,2},{3,3},{3,4},{4,1},{4,3}};
+
+
     public static long howMany(int size, int[] start, int[] end, int numMoves){
 
         int[][][] movesCoordinates = new int[numMoves][size*size][2];
         long[][][] movesValues = new long[numMoves][size][size];
+        int[][][][] positionMovements = new int[size][size][size*size][2];
+
+        for(int i=0;i<size;i++){
+            for(int j=0;j<size;j++){
+                for(int k=0;k<size*size;k++){
+                    positionMovements[i][j][k][0] = -1;
+                }
+            }
+        }
+
 
         for(int k=0;k<numMoves;k++){
             for(int i=0;i<size*size;i++){
@@ -44,51 +59,34 @@ public class ChessMetric {
             }
         }
 
-
-        int m=0;
-        for(int i=0;i<size;i++){
-           for(int j=0;j<size;j++){
-               int[] localEnd = {i,j};
-               if(testMove(start,localEnd)){
-                   movesValues[0][i][j]++;
-                   movesCoordinates[0][m][0] = i;
-                   movesCoordinates[0][m][1] = j;
-                   m++;
-               }
-           }
+        movesCoordinates[0] = move(start,positionMovements);
+        for(int i=0;i<movesCoordinates[0].length;i++){
+            if(movesCoordinates[0][i][0]==-1)
+                break;
+            movesValues[0][movesCoordinates[0][i][0]][movesCoordinates[0][i][1]] = 1;
         }
-
-        for(int k=1;k<numMoves;k++){
+        for(int i=1;i<numMoves;i++){
             int n=0;
-            for(int i=0;i<size;i++){
-                for(int j=0;j<size;j++){
-                   for(int l=0;l<movesCoordinates[k-1].length;l++){
-                       if(movesCoordinates[k-1][l][0]==-1)
-                           break;
-                       int[] localStart = {i,j};
-                       if(testMove(localStart,movesCoordinates[k-1][l])){
-                           movesValues[k][i][j] += movesValues[k-1][movesCoordinates[k-1][l][0]][movesCoordinates[k-1][l][1]];
-                           if(!containsCoordinates(movesCoordinates[k],localStart)){
-                               movesCoordinates[k][n][0] = i;
-                               movesCoordinates[k][n][1] = j;
-                               n++;
-                           }
-                       }
-                   }
+            for(int j=0;j<movesCoordinates[i].length;j++){
+                if(movesCoordinates[i-1][j][0]==-1)
+                    break;
+                int[][] currentMoves = move(movesCoordinates[i-1][j],positionMovements);
+                for(int k=0;k<currentMoves.length;k++){
+                    if(currentMoves[k][0]==-1)
+                        break;
+                    if(!containsCoordinates(movesCoordinates[i],currentMoves[k])) {
+                        movesCoordinates[i][n] = currentMoves[k];
+                        n++;
+                    }
+                    movesValues[i][currentMoves[k][0]][currentMoves[k][1]] +=
+                            movesValues[i-1][movesCoordinates[i-1][j][0]][movesCoordinates[i-1][j][1]];
                 }
             }
+
         }
 
         return movesValues[numMoves-1][end[0]][end[1]];
 
-    }
-
-    private static boolean testMove(int[] start, int[] end){
-        boolean result =  (start[0]==end[0] && Math.abs(start[1]-end[1])==1) |
-                (start[1]==end[1] && Math.abs(start[0]-end[0])==1) |
-                ((Math.abs(end[0]-start[0])*Math.abs(end[1]-start[1]))==1) |
-        ((Math.abs(end[0]-start[0])*Math.abs(end[1]-start[1]))==2);
-        return result;
     }
 
     private static boolean containsCoordinates( int[][] coordinates, int[] coordinate){
@@ -102,5 +100,24 @@ public class ChessMetric {
         return  result;
     }
 
+    private static int[][] move(int[] start, int[][][][] positionMovements){
+        if (positionMovements[start[0]][start[1]][0][0]>-1) {
+            return positionMovements[start[0]][start[1]];
+        }
+        int boardSize = positionMovements.length;
+        int xDiff = start[0] - KINGKNIGHT_REFERENCE[0];
+        int yDiff = start[1] - KINGKNIGHT_REFERENCE[1];
+        int n=0;
+        for(int i=0;i<KINGKNIGHT_MOVEMENTS.length;i++){
+            int x = KINGKNIGHT_MOVEMENTS[i][0] + xDiff;
+            int y = KINGKNIGHT_MOVEMENTS[i][1] + yDiff;
+            if(x>=0&&x<boardSize&&y>=0&&y<boardSize){
+                int[] currentCoordinate = {x,y};
+                positionMovements[start[0]][start[1]][n] = currentCoordinate;
+                n++;
+            }
+        }
+        return positionMovements[start[0]][start[1]];
+    }
 
 }
