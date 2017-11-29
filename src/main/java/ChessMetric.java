@@ -40,98 +40,72 @@ public class ChessMetric {
 
     public static long howMany(int size, int[] start, int[] end, int numMoves){
 
-        int[][][] movesCoordinates = new int[numMoves][size*size][2];
-        long[][][] movesValues = new long[numMoves][size][size];
-        int[][][] positionMovements1 = new int[size*size][KINGKNIGHT_MOVEMENTS.length][2];
+        long[][][] numWaysValues = new long[size][size][numMoves+1];
+        int[][][] positionMovements = new int[size*size][KINGKNIGHT_MOVEMENTS.length][2];
 
-
-        for(int i=0;i<size*size;i++){
-            for(int j=0;j<KINGKNIGHT_MOVEMENTS.length;j++){
-                positionMovements1[i][j][0] = -1;
-            }
-        }
-
-        movesCoordinates[0] = move(start,positionMovements1);
-        for(int i=0;i<movesCoordinates[0].length;i++){
-            if(movesCoordinates[0][i][0]==-1)
-                break;
-            movesValues[0][movesCoordinates[0][i][0]][movesCoordinates[0][i][1]] = 1;
-        }
-        for(int i=1;i<numMoves;i++){
-            int n=0;
-            for(int j=0;j<movesCoordinates[i].length;j++){
-                if(movesCoordinates[i-1][j][0]==-1)
-                    break;
-                int[][] currentMoves = move(movesCoordinates[i-1][j],positionMovements1);
-                for(int k=0;k<currentMoves.length;k++){
-                    if(currentMoves[k][0]==-1)
-                        break;
-                    if(!containsCoordinates(movesCoordinates[i],currentMoves[k])) {
-                        movesCoordinates[i][n] = currentMoves[k];
-                        n++;
-                    }
-                    movesValues[i][currentMoves[k][0]][currentMoves[k][1]] +=
-                            movesValues[i-1][movesCoordinates[i-1][j][0]][movesCoordinates[i-1][j][1]];
+        for(int i=0;i<numWaysValues.length;i++){
+            for(int j=0;j<numWaysValues[i].length;j++){
+                for(int k=0;k<numWaysValues[i][j].length;k++){
+                    numWaysValues[i][j][k] = -1;
                 }
             }
-
         }
 
-        return movesValues[numMoves-1][end[0]][end[1]];
-
-    }
-
-    private static boolean containsCoordinates( int[][] coordinates, int[] coordinate){
-        boolean result = false;
-        for(int i=0;i<coordinates.length;i++){
-            if(coordinates[i][0]==coordinate[0] && coordinates[i][1]==coordinate[1]){
-                result=true;
-                break;
+        for(int i=0;i<positionMovements.length;i++){
+            for(int j=0;j<positionMovements[i].length;j++){
+                positionMovements[i][j][0] = -1;
             }
         }
-        return  result;
+
+
+        return howMany(start[0],start[1],end[0],end[1],numMoves,positionMovements,numWaysValues);
+
     }
 
-    private static int[][] move(int[] start, int[][][][] positionMovements){
-
-        if (positionMovements[start[0]][start[1]][0][0]>-1) {
-            return positionMovements[start[0]][start[1]];
+    private static int[][] move(int x, int y, int[][][] positionMovements){
+        int size = (int) Math.sqrt(positionMovements.length);
+        if (positionMovements[x*size+y][0][0]>-1) {
+            return positionMovements[x*size+y];
         }
-        int boardSize = positionMovements.length;
-        int xDiff = start[0] - KINGKNIGHT_REFERENCE[0];
-        int yDiff = start[1] - KINGKNIGHT_REFERENCE[1];
+        int boardSize = (int) Math.sqrt(positionMovements.length);
+        int xDiff = x - KINGKNIGHT_REFERENCE[0];
+        int yDiff = y - KINGKNIGHT_REFERENCE[1];
         int n=0;
         for(int i=0;i<KINGKNIGHT_MOVEMENTS.length;i++){
-            int x = KINGKNIGHT_MOVEMENTS[i][0] + xDiff;
-            int y = KINGKNIGHT_MOVEMENTS[i][1] + yDiff;
-            if(x>=0&&x<boardSize&&y>=0&&y<boardSize){
-                int[] currentCoordinate = {x,y};
-                positionMovements[start[0]][start[1]][n] = currentCoordinate;
+            int x1 = KINGKNIGHT_MOVEMENTS[i][0] + xDiff;
+            int y1 = KINGKNIGHT_MOVEMENTS[i][1] + yDiff;
+            if(x1>=0&&x<boardSize&&y1>=0&&y1<boardSize){
+                int[] currentCoordinate = {x1,y1};
+                positionMovements[x*size+y][n] = currentCoordinate;
                 n++;
             }
         }
-        return positionMovements[start[0]][start[1]];
+        return positionMovements[x*size+y];
     }
 
-    private static int[][] move(int[] start, int[][][] positionMovements1){
-        int size = (int) Math.sqrt(positionMovements1.length);
-        if (positionMovements1[start[0]*size+start[1]][0][0]>-1) {
-            return positionMovements1[start[0]*size+start[1]];
-        }
-        int boardSize = (int) Math.sqrt(positionMovements1.length);
-        int xDiff = start[0] - KINGKNIGHT_REFERENCE[0];
-        int yDiff = start[1] - KINGKNIGHT_REFERENCE[1];
-        int n=0;
-        for(int i=0;i<KINGKNIGHT_MOVEMENTS.length;i++){
-            int x = KINGKNIGHT_MOVEMENTS[i][0] + xDiff;
-            int y = KINGKNIGHT_MOVEMENTS[i][1] + yDiff;
-            if(x>=0&&x<boardSize&&y>=0&&y<boardSize){
-                int[] currentCoordinate = {x,y};
-                positionMovements1[start[0]*size+start[1]][n] = currentCoordinate;
-                n++;
+    private static long howMany(int sx, int sy, int x, int y, int numMoves,int[][][] positionMovements, long[][][] numWaysValues ){
+
+        if(numWaysValues[x][y][numMoves]!=-1)
+            return numWaysValues[x][y][numMoves];
+
+        long numWays = 0;
+        int[][] positions = move(x,y,positionMovements);
+        if(numMoves>1){
+            for(int i=0;i<positions.length;i++){
+                if(positions[i][0]==-1)
+                    break;
+                numWays+= howMany(sx,sy,positions[i][0],positions[i][1],numMoves-1,positionMovements,numWaysValues);
+            }
+        }else if(numMoves==1){
+            for(int i=0;i<positions.length;i++){
+               if(positions[i][0]==sx && positions[i][1]==sy){
+                   numWays=1;
+                   break;
+               }
             }
         }
-        return positionMovements1[start[0]*size+start[1]];
+        numWaysValues[x][y][numMoves] = numWays;
+        return numWays;
     }
 
 }
